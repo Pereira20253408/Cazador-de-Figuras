@@ -1,0 +1,523 @@
+/* --- ESTILOS PARA EL JUEGO "CAZADOR DE FORMAS*/
+
+body.game-page {
+    background-image: url('../images/game-background.webp'); /* Cambia la ruta */
+    background-size: cover;           /* Escala la imagen para cubrir todo */
+    background-position: center center; /* Centra la imagen */
+    background-repeat: no-repeat;     /* Evita que se repita */
+    background-attachment: fixed;     /* Fija el fondo para que no se desplace con el scroll (opcional) */
+}
+
+/* --- Contenedor Principal del Juego --- */
+#game-container {
+    width: 100%;
+    max-width: 800px; /* Ancho máximo del juego (ajusta según prefieras) */
+    aspect-ratio: 4 / 3; /* Proporción 4:3, ajusta si prefieres otra */
+    margin: 1rem auto; /* Centrar horizontalmente y dar espacio vertical */
+    position: relative; /* Para posicionar pantallas overlay y canvas */
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 5px solid #444; /* Borde grueso */
+    border-radius: 15px;
+    overflow: hidden; /* Muy importante para contener todo */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.level-up-popup {
+    position: absolute; /* Posicionar sobre el canvas/juego */
+    top: 40%;           /* Centrar verticalmente (inicial) */
+    left: 50%;          /* Centrar horizontalmente (inicial) */
+    transform: translate(-50%, -50%) scale(0.5); /* Centrar y escalar a pequeño */
+    background: linear-gradient(45deg, #ffeb3b, #ffc107); /* Fondo amarillo/naranja */
+    color: #333; /* Texto oscuro */
+    padding: 1.5rem 3rem; /* Padding generoso */
+    border-radius: 50px; /* Muy redondeado */
+    font-family: var(--font-family-titles, 'Finger Paint', cursive);
+    font-size: clamp(1.8rem, 6vw, 3rem); /* Tamaño grande y adaptable */
+    font-weight: bold;
+    text-align: center;
+    z-index: 150; /* Encima de casi todo, excepto quizás overlays de pausa/game over */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    border: 4px solid white;
+
+    /* --- Estado Inicial y Animación --- */
+    opacity: 0;         /* Invisible por defecto */
+    visibility: hidden; /* Oculto por defecto */
+    transition: opacity 0.3s ease-out, transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), visibility 0s linear 0.5s; /* Transiciones suaves */
+}
+
+/* Estado visible/activo (añadido por JS) */
+.level-up-popup.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1); /* Escala a tamaño normal */
+    transition-delay: 0s, 0s, 0s; /* Resetear delay de visibility */
+}
+
+#level-up-value {
+     margin-left: 0.5ch; /* Pequeño espacio */
+}
+
+/* --- Estilos Generales para las Pantallas --- */
+.screen {
+    position: absolute; /* Posicionar todas las pantallas en el mismo lugar */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 1.5rem;
+    box-sizing: border-box;
+    display: none; /* Ocultas por defecto */
+    flex-direction: column; /* Para centrar contenido verticalmente */
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.6); /* Fondo base semi-transparente */
+    color: white;
+    font-family: var(--font-family-body, 'Comic Neue', cursive); /* Usa variable si la definiste */
+}
+
+/* Pantalla activa es visible y usa flex */
+.screen.active {
+    display: flex;
+}
+
+/* Pantallas que se superponen (Pausa, Game Over) */
+.screen.overlay {
+    background-color: rgba(0, 0, 0, 0.85); /* Fondo más oscuro */
+    z-index: 100; /* Asegurar que esté por encima de la pantalla de juego */
+}
+
+/* --- Estilos Pantalla de Inicio (#start-screen) --- */
+#start-screen {
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url('../images/game-background-2.webp') center/cover no-repeat;
+}
+
+#start-screen .start-logo {
+    max-width: 120px; /* Tamaño logo */
+    margin-bottom: 0.5rem;
+}
+
+#start-screen h1 {
+    font-family: var(--font-family-titles, 'Finger Paint', cursive);
+    font-size: clamp(2rem, 8vw, 4rem); /* Tamaño de fuente adaptable */
+    color: #ffeb3b; /* Amarillo */
+    margin-bottom: 1rem;
+    text-shadow: 3px 3px 5px rgba(0,0,0,0.7);
+}
+
+#start-screen .instructions {
+    font-size: clamp(1rem, 4vw, 1.3rem);
+    margin-bottom: 2rem;
+    line-height: 1.4;
+}
+
+/* --- Estilos Pantalla Principal del Juego (#game-screen) --- */
+#game-screen {
+    background-color: transparent; /* El fondo lo dará el #game-container o el canvas */
+    justify-content: flex-start; /* Alinear UI arriba, canvas ocupa el resto */
+    padding: 0; /* Quitamos padding general para controlar UI y canvas */
+    z-index: 10; /* Debajo de overlays */
+}
+
+/* Barra de UI Superior */
+#game-ui-top {
+    width: 100%;
+    display: flex;
+    justify-content: space-between; /* Distribuir elementos */
+    align-items: center;
+    padding: 0.6rem 1.2rem; /* Espaciado interno */
+    background-color: rgba(255, 255, 255, 0.2); /* Fondo semi-transparente */
+    backdrop-filter: blur(8px); /* Efecto esmerilado */
+    -webkit-backdrop-filter: blur(8px); /* Prefijo para Safari */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25); /* Borde inferior MUY sutil */
+    color: white;
+    font-family: var(--font-family-body, 'Comic Neue', cursive);
+    font-weight: var(--font-weight-bold, 700);
+    font-size: clamp(0.9rem, 3vw, 1.2rem); /* Tamaño adaptable */
+    box-sizing: border-box;
+    flex-wrap: wrap; /* Permitir que se envuelva en pantallas muy pequeñas */
+    gap: 0.5rem 1rem; /* Espacio si se envuelve */
+    justify-content: space-between;
+}
+
+.ui-element {
+    background-color: transparent;
+    padding: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.ui-element.lives i.fa-heart {
+    color: #e91e63; /* Color corazón */
+    text-shadow: none;
+    font-size: 0.95;
+    margin-left: 2px;
+}
+
+/* Indicador de Forma Objetivo */
+.ui-element.target-shape {
+    display: flex; /* Alinear "Atrapa:" con imagen y nombre */
+    align-items: center;
+    gap: 0.4rem;
+    background-color: rgba(255, 255, 255, 0.15);
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+}
+#target-shape-image {
+    height: 2em; /* Altura relativa al texto */
+    width: auto;
+    vertical-align: middle;
+}
+#target-shape-name {
+    font-style: italic;
+    color: #ffeb3b;
+}
+
+/* --- Canvas (Área de Juego) --- */
+#game-canvas {
+    display: block; /* Quitar espacio extra debajo */
+    width: 100%;    /* Ocupa todo el ancho del contenedor */
+    height: 100%;   /* Ocupa todo el alto del contenedor (IMPORTANTE para JS) */
+    /* El tamaño real en píxeles se establecerá con JS (canvas.width, canvas.height) */
+    /* background-color: #5c94fc; */ /* Color de fondo temporal (opcional) */
+    position: absolute; /* Para que se coloque debajo de la UI */
+    top: 0;
+    left: 0;
+    z-index: -1; /* Detrás de la UI Top */
+}
+
+
+/* --- Botones Generales de UI --- */
+.game-ui-button {
+    display: inline-block;
+    padding: 12px 30px;
+    font-family: var(--font-family-titles, 'Finger Paint', cursive);
+    font-size: clamp(1.1rem, 5vw, 1.8rem); /* Tamaño adaptable */
+    color: white;
+    background-color: #4caf50; /* Verde */
+    border: 3px solid #a5d6a7; /* Borde verde claro */
+    border-radius: 30px;
+    cursor: pointer;
+    text-decoration: none;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.game-ui-button:hover,
+.game-ui-button:focus { /* Añadir estado focus */
+    background-color: #388e3c; /* Verde oscuro */
+    transform: scale(1.05);
+    outline-offset: 4px; /* Ajustar outline para botones grandes */
+}
+
+/* Botón de Pausa específico */
+.pause-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    padding: 0.5rem; /* Más pequeño */
+    width: 45px;
+    height: 45px;
+    font-size: 1.2rem; /* Tamaño icono */
+    border-radius: 50%; /* Redondo */
+    background-color: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    line-height: 1;
+    z-index: 50; /* Encima del canvas pero debajo de overlays */
+}
+.pause-btn:hover,
+.pause-btn:focus {
+    background-color: rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
+}
+
+/* --- Estilos Pantalla de Pausa (#pause-screen) --- */
+#pause-screen {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('../images/background_pause.webp');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+#pause-screen h2 {
+    color: #ffeb3b; /* Amarillo */
+    font-size: clamp(3rem, 20vw, 5rem);
+    margin-bottom: 2rem;
+    text-shadow: 0 0 15px rgba(0, 0, 0, 1);
+}
+
+/* --- Estilos Pantalla Game Over (#game-over-screen) --- */
+#game-over-screen {
+     background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('../images/background_gameover.webp');
+     background-size: cover;
+     background-position: center center;
+     background-repeat: no-repeat;
+}
+
+#game-over-screen h2 {
+    color: #ba2402;
+    font-size: clamp(3rem, 12vw, 5rem);
+     margin-bottom: 1rem;
+}
+#game-over-screen p {
+    font-size: clamp(2rem, 10vw, 3rem);
+    margin-bottom: 2rem;
+    color: white;
+    text-shadow: 0 0 15px rgba(0, 0, 0, 1);
+}
+#game-over-screen #final-score {
+    font-weight: bold;
+    color: #020eba;
+    font-size: 1.5em;
+}
+#game-over-screen .back-link {
+    display: block;
+    margin-top: 1.5rem;
+    color: white;
+    font-size: 0.9rem;
+    text-decoration: underline;
+}
+#game-over-screen .back-link:hover {
+    color: #fff;
+}
+
+.music-controls-absolute {
+    position: absolute; /* ¡Posicionamiento absoluto! */
+    z-index: 50;       /* Asegurar que esté encima del canvas, igual que el botón pausa */
+    top: 60px;    /* Distancia desde arriba */
+    right: 120px;   /* Distancia desde la derecha */
+    display: inline-flex; /* O flex */
+    align-items: center;
+    gap: 0.5rem;
+    background-color: rgba(124, 0, 181, 0.7); /* Fondo para visibilidad */
+    padding: 0.5rem 0.8rem;
+    border-radius: 20px;
+}
+
+.music-controls-absolute .music-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: rgba(3, 207, 252, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    flex-shrink: 0;
+    color: white; /* Color del icono */
+    display: inline-flex;   /* O flex si el contenedor padre no es inline */
+    justify-content: center;/* Centra el icono horizontalmente */
+    align-items: center;    /* Centra el icono verticalmente */
+    padding: 0;             /* Asegurar sin padding extra */
+    font-size: 1rem;        /* Tamaño del icono (ajusta) */
+    line-height: 1;         /* Evitar altura extra por line-height */
+    text-shadow: none;      /* Quitar herencias innecesarias */
+    box-shadow: none;       /* Quitar herencias innecesarias */
+    font-family: initial;   /* Para que use FontAwesome */
+}
+
+.music-controls-absolute #volume-slider {
+    width: 70px;
+}
+
+.music-controls-absolute .music-btn:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+    transform: scale(1.1);
+}
+
+.music-controls-absolute .music-btn:focus {
+    outline: 1px solid var(--color-ckc-blue-link, #1e90ff);
+    outline-offset: 2px;
+}
+
+/* --- Estilo para Puntos Flotantes --- */
+.floating-score {
+    position: absolute; /* Posicionar sobre el canvas */
+    left: 0; /* El JS calculará la posición exacta */
+    top: 0;  /* El JS calculará la posición exacta */
+    font-family: var(--font-family-titles, 'Finger Paint', cursive);
+    font-size: 1.5rem; /* Tamaño del texto flotante */
+    font-weight: bold;
+    pointer-events: none; /* Para que no interfiera con clics/toques */
+    z-index: 60; /* Encima de la cesta/figuras, debajo de UI quizás */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    opacity: 1; /* Visible al inicio */
+    animation: floatUpFade 1.2s ease-out forwards;
+}
+
+/* Colores específicos */
+.floating-score.plus {
+    color: #4caf50; /* Verde para puntos positivos */
+}
+.floating-score.minus {
+    color: #f44336; /* Rojo para puntos negativos */
+}
+
+/* Animación Keyframes */
+@keyframes floatUpFade {
+    0% {
+        opacity: 1;
+        transform: translateY(0); /* Posición inicial */
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-50px); /* Mover 50px hacia arriba */
+    }
+}
+
+/* Estilos Opcionales para High Score */
+.high-score-display {
+    margin-top: 1rem; /* Espacio arriba */
+    font-size: clamp(1rem, 5vw, 2rem); /* Tamaño adaptable */
+    text-shadow: 0 0 10px rgba(256, 256, 256, 0.5);
+}
+.high-score-display span {
+    font-weight: bold;
+    color: #020eba;
+}
+#new-record-message {
+    margin-top: 0.5rem;
+    font-size: 1.2em; /* Un poco más grande */
+    animation: pulse 1.5s infinite; /* Animación para destacar */
+}
+
+                                                                           /* --- Media Queries --- */
+@media (max-width: 768px) {
+    #game-container {
+        width: 98%;
+        height: 95vh; /* 95% de la altura del viewport */
+        max-width: none; /* Quitar max-width para que se expanda */
+        aspect-ratio: auto; /* Quitar aspect-ratio fijo */
+        margin: auto; /* Centrar vertical y horizontalmente si es posible */
+        border-width: 3px; /* Borde más fino */
+        border-radius: 5px; /* Menos redondeo */
+        position: relative;
+        overflow: hidden;
+    }
+
+    .level-up-popup {
+        padding: 1rem 2rem;
+        font-size: clamp(1.5rem, 5vw, 2.2rem);
+        border-width: 3px;
+    }
+
+      #game-ui-top {
+        padding: 1rem 0.6rem;
+        font-size: clamp(1.5rem, 2.5vw, 0.9rem);
+        gap: 0.3rem 0.5rem;
+        justify-content: space-around; /* O center si prefieres */
+    }
+
+     .music-controls-absolute {
+        top: 70px;
+        right: 15px;
+    }
+    .music-controls-absolute .music-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+     .music-controls-absolute .music-btn:hover { /* Estilo hover móvil */
+         background-color: rgba(3, 207, 252, 0.8);
+         transform: scale(1.1);
+    }
+     .music-controls-absolute .music-btn:focus { /* Estilo focus móvil */
+        outline: 1px solid #1e90ff; /* Outline más fino */
+        outline-offset: 1px;
+    }
+
+    /* Botón Pausa */
+    .pause-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+        bottom: 15px;
+        right: 5px;
+        border-width: 1px;
+        transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    }
+    .pause-btn:hover {
+        background-color: rgba(0, 0, 0, 0.8);
+        border-color: white;
+        transform: scale(1.1);
+    }
+    .pause-btn:focus {
+        outline: 2px solid #1e90ff; /* Outline más fino */
+        outline-offset: 1px;
+    }
+    .pause-btn:active {
+        background-color: rgba(3, 207, 252, 0.8);
+        transform: scale(0.95);
+        transition-duration: 0.05s;
+    }
+
+     /* Botones generales UI */
+     .game-ui-button:not(.music-btn):not(.pause-btn) {
+        padding: 8px 20px;
+        font-size: clamp(1.5rem, 3.8vw, 1.3rem);
+    }
+
+     /* Textos en overlays */
+     #start-screen h1, #pause-screen h2, #game-over-screen h2 {
+         font-size: clamp(2rem, 6vw, 2.5rem);
+     }
+     #start-screen .instructions, #game-over-screen p {
+         font-size: clamp(1.3rem, 3vw, 1rem);
+     }
+     #start-screen .start-logo { max-width: 120px; }
+}
+        
+/* --- Pantallas Pequeñas (Móviles, ej. <= 600px) --- */
+@media (max-width: 600px) {
+
+    #game-ui-top {
+        padding: 0.5rem 0.8rem;
+        font-size: clamp(0.8rem, 2.8vw, 0.9rem);
+        justify-content: space-around;
+        backdrop-filter: blur(5px); /* Reducir blur si afecta rendimiento */
+        -webkit-backdrop-filter: blur(5px);
+        border-bottom-width: 1px; /* Mantener borde fino */
+    }
+
+    .music-controls-absolute #volume-slider {
+        display: none;
+    }
+
+    /* Ocultar nombre de forma objetivo */
+     #target-shape-name {
+          display: none;
+     }
+     .ui-element.target-shape {
+         padding: 0.15rem 0.4rem;
+     }
+     #target-shape-image {
+         height: 1.1em;
+     }
+
+    .music-controls-absolute {
+        top: 90px;
+        right: 10px;
+        background-color: rgba(0, 0, 0, 0);
+     }
+
+    /* Botón Pausa */
+    .pause-btn {
+        right: 1px;
+    }
+
+/* Ajustes específicos para pantallas MUY bajas (opcional) */
+@media (max-height: 450px) and (max-width: 768px) { /* Aplicar solo si es baja Y ancha/mediana */
+    #game-container {
+        height: 90vh;
+     }
+
+     #game-ui-top { padding: 0.3rem 0.8rem; font-size: 0.8rem; }
+
+     .music-controls-absolute { top: 5px; right: 5px; }
+     .pause-btn { bottom: 3px; right: 3px; }
+
+    #start-screen h1 { font-size: 1.5rem; margin-bottom: 0.3rem;}
+    #start-screen .instructions { font-size: 0.8rem; margin-bottom: 0.8rem;}
+    #start-screen .start-logo { max-width: 80px; }
+    #pause-screen h2, #game-over-screen h2 { font-size: 1.8rem; }
+    #game-over-screen p { font-size: 1rem; }
+}

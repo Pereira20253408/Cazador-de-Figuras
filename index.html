@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"> <!-- user-scalable=no es útil para juegos táctiles -->
+    <title>Cazador de Formas - Canciones Kids Coloridas</title>
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <!-- Font Awesome (Si usas iconos fuera del juego principal) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Finger+Paint&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="game-page">
+
+    <!-- Contenedor Principal del Juego -->
+    <div id="game-container">
+
+        <div id="level-up-notification" class="level-up-popup">
+            Nivel <span id="level-up-value">2</span>!
+        </div>
+
+        <audio id="background-audio" loop>
+            <source src="sound/background-music.mp3" type="audio/mpeg">
+            Tu navegador no soporta el elemento de audio para la música de fondo.
+        </audio>
+
+        <!-- 1. Pantalla de Inicio (Se ocultará al empezar) -->
+        <div id="start-screen" class="screen active">
+             <img src="images/logo.png" alt="Logo CKC" class="start-logo"> <!-- Logo Opcional -->
+            <h1>Cazador de Formas</h1>
+            <p class="instructions">Mueve la cesta para atrapar las figuras.<br>¡Prepárate!</p>
+            <p class="high-score-display">Mejor Puntuación: <span id="start-high-score">0</span></p>
+            <button id="start-button" class="game-ui-button">¡Jugar!</button>
+        </div>
+
+        <!-- 2. Pantalla Principal del Juego (Contiene UI y Canvas) -->
+        <div id="game-screen" class="screen">
+            <!-- UI Superior: Puntos, Vidas, Nivel, Forma Objetivo -->
+            <div id="game-ui-top">
+                <div class="ui-element score">
+                    Puntos: <span id="score-value">0</span>
+                </div>
+                <div class="ui-element level">
+                    Nivel: <span id="level-value">1</span>
+                </div>
+                <div class="ui-element lives">
+                    Vidas:
+                    <span id="lives-container">
+                        <i class="fas fa-heart"></i>
+                        <i class="fas fa-heart"></i>
+                        <i class="fas fa-heart"></i>
+                        <i class="fas fa-heart"></i>
+                        <i class="fas fa-heart"></i>
+                    </span>
+                </div>
+                 <!-- Se mostrará solo a partir del Nivel 6 -->
+                <div class="ui-element target-shape" id="target-shape-indicator" style="display: none;">
+                     Atrapa: <img src="" alt="Forma objetivo" id="target-shape-image"> <span id="target-shape-name"></span>
+                 </div>
+            </div>
+
+            <!-- Área de Juego (Canvas) -->
+            <canvas id="game-canvas"></canvas>
+
+            <!-- Botón de Pausa (Opcional) -->
+            <button id="pause-button" class="game-ui-button pause-btn" aria-label="Pausa"><i class="fas fa-pause"></i></button>
+        </div>
+
+        <!-- 3. Pantalla de Pausa (Se superpone) -->
+        <div id="pause-screen" class="screen overlay">
+            <h2>Pausa</h2>
+            <button id="resume-button" class="game-ui-button">Continuar</button>
+        </div>
+
+        <!-- 4. Pantalla de Game Over (Se superpone) -->
+        <div id="game-over-screen" class="screen overlay">
+            <h2>¡Fin del Juego!</h2>
+            <p>Tu puntuación: <span id="final-score">0</span></p>
+
+            <p class="high-score-display">Mejor Puntuación: <span id="game-over-high-score">0</span></p>
+            <p id="new-record-message" style="display: none; color: #ffeb3b; font-weight: bold;">¡NUEVO RÉCORD!</p>
+            
+            <button id="restart-button" class="game-ui-button">Jugar de Nuevo</button>
+             <!-- Opcional: Enlace para volver al sitio principal -->
+             <a href="https://cancioneskidscoloridas.netlify.app/" class="back-link">Volver al inicio</a>
+        </div>
+
+    </div>
+    <div class="music-controls-absolute"> <!-- Nueva clase para evitar conflictos -->
+            <button id="mute-button" class="game-ui-button music-btn" aria-label="Silenciar música de fondo">
+                <i class="fas fa-volume-high"></i>
+            </button>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.3" aria-label="Volumen música de fondo">
+    </div>
+
+    <script src="js/script.js"></script>
+
+</body>
+</html>

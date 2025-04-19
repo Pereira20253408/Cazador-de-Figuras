@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Estado del juego
     let gameState = 'START'; // START, PLAYING, PAUSED, GAME_OVER
     let score = 0;
-    let lives = 5;
+    let lives = 3;
     let level = 1;
     let gameLoopId = null;
     let targetShapeType = null;
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let fallingShapes = [];
 
     // Configuración del juego
-    const INITIAL_LIVES = 5;
+    const INITIAL_LIVES = 3;
     const POINTS_PER_CATCH = 3;
     const POINTS_PENALTY = -2;
     const BASKET_WIDTH = 90;

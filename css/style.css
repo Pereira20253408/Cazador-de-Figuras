@@ -133,7 +133,7 @@ body.game-page {
     color: white;
     font-family: var(--font-family-body, 'Comic Neue', cursive);
     font-weight: var(--font-weight-bold, 700);
-    font-size: clamp(0.9rem, 3vw, 1.2rem); /* Tamaño adaptable */
+    font-size: clamp(0.9rem, 3vw, 1.8rem); /* Tamaño adaptable */
     box-sizing: border-box;
     flex-wrap: wrap; /* Permitir que se envuelva en pantallas muy pequeñas */
     gap: 0.5rem 1rem; /* Espacio si se envuelve */
@@ -164,7 +164,7 @@ body.game-page {
     border-radius: 15px;
 }
 #target-shape-image {
-    height: 2em; /* Altura relativa al texto */
+    height: 1em; /* Altura relativa al texto */
     width: auto;
     vertical-align: middle;
 }
